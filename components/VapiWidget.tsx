@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { vapiConfig } from '../config/vapi';
+import { fetchVapiConfig } from '../config/vapi';
 import { X, Mic, Send, Phone, PhoneOff } from 'lucide-react';
 
 interface Message {
@@ -24,14 +24,33 @@ export const VapiWidget = () => {
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [showDebug, setShowDebug] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [vapiConfig, setVapiConfig] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only load if we have the required environment variables
-    if (!vapiConfig.assistantId || !vapiConfig.publicApiKey) {
-      console.warn('Vapi configuration missing. Please set environment variables.');
-      return;
-    }
+    // Fetch Vapi configuration securely from API
+    const loadVapiConfig = async () => {
+      try {
+        const config = await fetchVapiConfig();
+        setVapiConfig(config);
+        
+        // Only proceed if we have the required configuration
+        if (!config.assistantId || !config.publicApiKey) {
+          console.warn('Vapi configuration missing. Please set environment variables.');
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to load Vapi configuration:', error);
+        return;
+      }
+    };
+
+    loadVapiConfig();
+  }, []);
+
+  useEffect(() => {
+    // Only initialize Vapi after we have the configuration
+    if (!vapiConfig) return;
 
     // Import Vapi dynamically
     const initVapi = async () => {
@@ -140,7 +159,7 @@ export const VapiWidget = () => {
         vapi.stop();
       }
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [vapiConfig, vapi]); // Re-run when vapiConfig or vapi changes
 
   const addMessage = (role: 'user' | 'assistant', content: string) => {
     const newMessage: Message = {
@@ -360,7 +379,7 @@ export const VapiWidget = () => {
                 fontWeight: '600',
                 fontSize: isMobile ? '16px' : '14px',
               }}>
-                YallaTalk Assistant
+                {vapiConfig?.agentName || 'YallaTalk Assistant'}
               </span>
               <button
                 onClick={() => setShowDebug(!showDebug)}

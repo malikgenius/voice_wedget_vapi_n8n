@@ -1,7 +1,5 @@
-export const vapiConfig = {
-  assistantId: process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '',
-  publicApiKey: process.env.NEXT_PUBLIC_VAPI_PUBLIC_API_KEY || '',
-  agentName: process.env.NEXT_PUBLIC_AGENT_NAME || 'YallaTalk Assistant',
+// Static configuration that doesn't require environment variables
+export const vapiUIConfig = {
   buttonConfig: {
     position: "bottom-right" as const,
     offset: "40px",
@@ -16,7 +14,7 @@ export const vapiConfig = {
     idle: {
       color: "rgb(20, 184, 166)",
       type: "pill" as const,
-      title: `Chat with ${process.env.NEXT_PUBLIC_AGENT_NAME || 'AI Assistant'}`,
+      title: "Chat with YallaTalk Assistant",
       subtitle: "Voice & Text Available",
       icon: "https://unpkg.com/lucide-static@0.321.0/icons/message-circle.svg"
     },
@@ -47,3 +45,17 @@ export const vapiConfig = {
     }
   }
 };
+
+// Function to fetch secure Vapi configuration from API
+export async function fetchVapiConfig() {
+  try {
+    const response = await fetch('/api/vapi-config');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch Vapi configuration:', error);
+    throw new Error('Unable to load Vapi configuration');
+  }
+}
