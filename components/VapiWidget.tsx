@@ -159,7 +159,7 @@ export const VapiWidget = () => {
         vapi.stop();
       }
     };
-  }, [vapiConfig, vapi]); // Re-run when vapiConfig or vapi changes
+  }, [vapiConfig]); // Only re-run when vapiConfig changes
 
   const addMessage = (role: 'user' | 'assistant', content: string) => {
     const newMessage: Message = {
